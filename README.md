@@ -7,5 +7,7 @@ wget https://raw.githubusercontent.com/UltimateByte/failover-vpn-firewall-set/ma
 chmod +x firewall.sh
 
 ## Commands
+
 ./firewall.sh enable
+
 ./firewall.sh disable
