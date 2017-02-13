@@ -1,10 +1,14 @@
 #!/bin/bash
+# This script is intended to route traffic from a VPN through a failover IP
 
 # Settings
 
+# Your failover IP
 failover="x.x.x.x"
+# The VPN network
 vpnnetwork="10.8.0.0/24"
-vpnclient="10.8.0.4"
+# The VPN client IP to redirect traffic to
+vpnclient="10.8.0.6"
 
 # Script
 
