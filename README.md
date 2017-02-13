@@ -4,6 +4,7 @@ Simple script to enable or disable iptables redirect rules for VPN through failo
 # Usage
 
 wget https://raw.githubusercontent.com/UltimateByte/failover-vpn-firewall-set/master/firewall.sh
+
 chmod +x firewall.sh
 
 ## Commands
