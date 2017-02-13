@@ -7,6 +7,8 @@ Simple script to enable or disable iptables redirect rules for VPN through failo
 
 `chmod +x firewall.sh`
 
+`nano firewall.sh`
+
 ## Commands
 
 `./firewall.sh enable`
