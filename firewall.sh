@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script is intended to route traffic from a VPN through a failover IP
+# This simple script is intended to route traffic from a VPN through a failover IP
 
 # Settings
 
@@ -8,7 +8,7 @@ failover="x.x.x.x"
 # The VPN network
 vpnnetwork="10.8.0.0/24"
 # The VPN client IP to redirect traffic to
-vpnclient="10.8.0.6"
+vpnclient="10.8.0.2"
 
 # Script
 
@@ -23,39 +23,40 @@ fi
 
 # Enable rule
 if [ "$1" == "enable" ];then
-        echo "Enable VPN rules"
-        # Optional for dynamic failover
-        #ifconfig eth0:0 178.32.107.110 netmask 255.255.255.255 broadcast 178.32.107.110
+	echo "Enable VPN rules"
+	# Optional for dynamic failover
+	#ifconfig eth0:0 178.32.107.110 netmask 255.255.255.255 broadcast 178.32.107.110
 
-        # Allow forward
-        echo "Allowing forwarding"
-        echo 1 > /proc/sys/net/ipv4/ip_forward
+	# Allow forward
+	echo "Allowing forwarding"
+	echo 1 > /proc/sys/net/ipv4/ip_forward
 
-        # Apply table
-        echo "Applying iptables:"
-        echo " -> Redirect failover: ${failover} to client: ${vpnclient} on network: ${vpnnetwork}"
-        iptables -t nat -A POSTROUTING -s "${vpnnetwork}" ! -d "${vpnnetwork}" -j SNAT --to-source "${failover}"
-        iptables -t nat -A PREROUTING -d "${failover}" -j DNAT --to-destination "${vpnclient}"
-        echo "[OK] Job done"
-        exit
+	# Apply table
+	echo "Applying iptables:"
+	echo " -> Redirect failover: ${failover} to client: ${vpnclient} on network: ${vpnnetwork}"
+	# Any traffic incoming to the failover IP is routed into the VPN client
+	iptables -t nat -A PREROUTING -d "${failover}" -j DNAT --to-destination "${vpnclient}"
+	# Anything traffic sent by the VPN network to outside the VPN network is routed through the failover IP
+	iptables -t nat -A POSTROUTING -s "${vpnnetwork}" ! -d "${vpnnetwork}" -j SNAT --to-source "${failover}"
+	echo "[OK] Job done"
+	exit
 fi
 
 # Disable rules
-
 if [ "$1" == "disable" ];then
-        echo "Disable VPN rules"
-        # Disallow forward
-        echo "Disallow forwarding"
-        echo 0 > /proc/sys/net/ipv4/ip_forward
+	echo "Disable VPN rules"
+	# Disallow forward
+	echo "Disallow forwarding"
+	echo 0 > /proc/sys/net/ipv4/ip_forward
 
-        # Remove table
-        echo "Removing iptables:"
-        echo " <- Redirect failover: ${failover} to client: ${vpnclient} on network: ${vpnnetwork}"
-        iptables -t nat -D POSTROUTING -s "${vpnnetwork}" ! -d "${vpnnetwork}" -j SNAT --to-source "${failover}"
-        iptables -t nat -D PREROUTING -d "${failover}" -j DNAT --to-destination "${vpnclient}"
+	# Remove table
+	echo "Removing iptables:"
+	echo " <- Redirect failover: ${failover} to client: ${vpnclient} on network: ${vpnnetwork}"
+	iptables -t nat -D PREROUTING -d "${failover}" -j DNAT --to-destination "${vpnclient}"
+	iptables -t nat -D POSTROUTING -s "${vpnnetwork}" ! -d "${vpnnetwork}" -j SNAT --to-source "${failover}"
 
-        # Optional for dynamic failover
-        #ifconfig eth0:0 down
-        echo "[OK] Job done"
-        exit
+	# Optional for dynamic failover
+	#ifconfig eth0:0 down
+	echo "[OK] Job done"
+	exit
 fi
